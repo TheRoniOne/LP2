@@ -37,7 +37,7 @@
           (calcMenor (cdr lista) menor))))
 
 (define (buscarPos x y tam valor reduc nodos) ; y es x+1 tam es (length nodos)
-  (if (or (eq? y tam) (not (member valor reduc)))
+  (if (or (eq? y tam) (boolean? (member valor (list reduc))))
       '()
       (if (eq? (calcPeso nodos x y) valor)
           (append (list x)(list y) (buscarPos x (+ y 1) tam valor reduc nodos))
@@ -72,10 +72,10 @@
                    (append agregados (if (bucle? agregados (car (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos)) (car (cdr(buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos)))) ; arreglar reducido
                                                        '()
                                                        (car (cdr(buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) nodos)))))
-                                       ()
+                                       ;()
                                        (append resultado (if (bucle? agregados (car (cdr(buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos)))) ; arreglar reducido
                                                        '()
-                                                       (car (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos)) (car (cdr (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos))) (calcMenor pesos (car pesos)))))))
+                                                       (append (car (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos)) (car (cdr (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos))) (calcMenor pesos (car pesos))))))))
 
 (define (prim nodos)
   (primInterno nodos (grande 0 1 (length nodos) nodos) '(0) (filter (lambda (x) (if (eq? x -1)
@@ -85,16 +85,18 @@
 (define (kruskalInterno nodos reduc agregados pesos resultado)
   (if (eq? (length agregados) (length nodos))
       resultado
-      (kruskalInterno nodos (remove (car (cdr (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos))) (list-ref reduc (car (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos))))
+      (kruskalInterno nodos (remove (list-ref (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos) 2)) (list-ref reduc (car (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos)))
                       (append agregados (if (bucle? agregados (car (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos)) (car (cdr (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos))))
                                                        '()
-                                                       (car (cdr(buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) nodos)))))
+                                                       (list (car (cdr (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos))))))
                       (remove (calcMenor pesos (car pesos)) pesos)
-                      (append resultado (if (bucle? agregados (car (cdr (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos))))
+                      (append resultado (if (bucle? agregados (car (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos)) (car (cdr (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos))))
                                                        '()
-                                                       (car (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos)) (car (cdr (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos))) (calcMenor pesos (car pesos)))))))
+                                                       (append (list (car (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos)))
+                                                               (list (car (cdr (buscarPosG 0 1 (length nodos) (calcMenor pesos (car pesos)) reduc nodos))))
+                                                               (list (calcMenor pesos (car pesos)))))))))
 
 (define (kruskal nodos) ; calcular todos los pesos e ir cogiendo el primer menor de la lista de pesos
   (kruskalInterno nodos (grande 0 1 (length nodos) nodos) '() (filter (lambda (x) (if (eq? x -1)
                         #f
-                        #t)) (hallarPesosG 0 1 (length nodos) reduc nodos)) '()))
+                        #t)) (hallarPesosG 0 1 (length nodos) nodos)) '()))
